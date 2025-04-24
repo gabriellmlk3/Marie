@@ -11,6 +11,10 @@ import QuartzCore
 open class MarieCustomURLProtocol: URLProtocol {
     
     open override class func canInit(with request: URLRequest) -> Bool {
+        if URLProtocol.property(forKey: "Intercepted", in: request) != nil {
+            return false
+        }
+        
         guard let scheme = request.url?.scheme else { return false }
         return scheme == "http" || scheme == "https"
     }
@@ -20,7 +24,6 @@ open class MarieCustomURLProtocol: URLProtocol {
     }
     
     open override func startLoading() {
-        
         var logModel = URLLogModel(
             request: request,
             url: request.url,
@@ -31,40 +34,47 @@ open class MarieCustomURLProtocol: URLProtocol {
             requestBody: nil,
             responseTime: nil
         )
-        
+
         if let body = request.httpBodyStream {
             logModel.requestBody = (String(data: Data(reading: body), encoding: .utf8) ?? "")
         } else {
             logModel.requestBody = "Empty body"
         }
-        
+
         LogManager.shared.log(model: logModel)
         let startTime = CACurrentMediaTime()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
-            let task = URLSession.shared.dataTask(with: self.request) { (data, response, error) in
-                
-                let endTime = CACurrentMediaTime()
-                logModel.responseTime = (endTime - startTime) * 1000
-                
-                if let httpResponse = response as? HTTPURLResponse {
-                    logModel.status = HTTPStatusCode(rawValue: httpResponse.statusCode)
-                }
-                
-                if let data {
-                    logModel.responseBody = String(data: data, encoding: .utf8) ?? ""
-                } else if let error {
-                    logModel.responseBody = error.localizedDescription
-                }
-                
-                LogManager.shared.update(model: logModel)
+
+        let newRequest = (request as NSURLRequest).mutableCopy() as! NSMutableURLRequest
+        URLProtocol.setProperty(true, forKey: "Intercepted", in: newRequest)
+
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: newRequest as URLRequest) { data, response, error in
+            let endTime = CACurrentMediaTime()
+            logModel.responseTime = (endTime - startTime) * 1000
+
+            if let httpResponse = response as? HTTPURLResponse {
+                self.client?.urlProtocol(self, didReceive: httpResponse, cacheStoragePolicy: .notAllowed)
+                logModel.status = HTTPStatusCode(rawValue: httpResponse.statusCode)
             }
-            
-            task.resume()
+
+            if let data {
+                self.client?.urlProtocol(self, didLoad: data)
+                logModel.responseBody = String(data: data, encoding: .utf8) ?? ""
+            }
+
+            if let error {
+                self.client?.urlProtocol(self, didFailWithError: error)
+                logModel.responseBody = error.localizedDescription
+            } else {
+                self.client?.urlProtocolDidFinishLoading(self)
+            }
+
+            LogManager.shared.update(model: logModel)
         }
-        
-        client?.urlProtocolDidFinishLoading(self)
+
+        task.resume()
     }
+
     
     open override func stopLoading() { }
     

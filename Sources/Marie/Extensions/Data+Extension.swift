@@ -12,47 +12,90 @@ extension Data {
     
     func getFormattedJsonText() -> NSMutableAttributedString? {
         do {
-            let object = try JSONSerialization.jsonObject(with: self, options: .mutableLeaves)
-            let formattedData = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted])
+            let jsonObject = try JSONSerialization.jsonObject(with: self, options: [])
+            let attributedString = NSMutableAttributedString()
             
-            if let formattedJson = String(data: formattedData, encoding: .utf8)?.replacingOccurrences(of: "\\/", with: "/") {
-                
-                let attributedString = NSMutableAttributedString(string: formattedJson)
-                attributedString.addAttributes([.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)], range: NSRange(location: 0, length: attributedString.length))
-                let regex = try NSRegularExpression(pattern: "(\\\".+\\\") : (\\\".+\\\")?(\\d{1,})?([{\\[])?([}\\]])?(\\bfalse|true|null\\b)?", options: [])
-                let matches = regex.matches(in: formattedJson, options: [], range: NSRange(location: 0, length: formattedJson.utf16.count))
-                
-                for match in matches {
-                    let tagRange = match.range(at: 1)
-                    let stringValueRange = match.range(at: 2)
-                    let digitValueRange = match.range(at: 3)
-                    let rightBracesRange = match.range(at: 4)
-                    let leftBracesRange = match.range(at: 5)
-                    let otherValuesRange = match.range(at: 6)
-                    
-                    attributedString.addAttributes([.foregroundColor: UIColor.JSONKeyColor, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .bold)] , range: tagRange)
-                    attributedString.addAttributes([.foregroundColor: UIColor.JSONStringValueColor, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)], range: stringValueRange)
-                    attributedString.addAttributes([.foregroundColor: UIColor.JSONNumbersValueColor, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)], range: digitValueRange)
-                    attributedString.addAttributes([.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)], range: rightBracesRange)
-                    attributedString.addAttributes([.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)], range: leftBracesRange)
-                    attributedString.addAttributes([.foregroundColor: UIColor.JSONOtherValuesColor, .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)], range: otherValuesRange)
-                }
-                
-                return attributedString
-            }
+            format(jsonObject, into: attributedString, indentation: 0)
+            return attributedString
         } catch {
-            print("Error formatting JSON: \(error.localizedDescription)")
-            return nil
+            let errorString = NSMutableAttributedString(string: "⚠️ Invalid JSON: \(error.localizedDescription)")
+            errorString.addAttributes([.foregroundColor: UIColor.red], range: NSRange(location: 0, length: errorString.length))
+            return errorString
         }
+    }
+
+    private func format(_ value: Any, into attrString: NSMutableAttributedString, indentation: Int) {
+        let indent = String(repeating: "    ", count: indentation)
+        let newline = "\n"
         
-        return nil
+        switch value {
+        case let dict as [String: Any]:
+            attrString.append(colored("{\(newline)", .white))
+            for (key, val) in dict {
+                attrString.append(colored("\(indent)  \"\(key)\"", .JSONKeyColor))
+                attrString.append(colored(": ", .white))
+                format(val, into: attrString, indentation: indentation + 1)
+                attrString.append(colored(",\(newline)", .white))
+            }
+            if attrString.string.hasSuffix(",\(newline)") {
+                attrString.deleteCharacters(in: NSRange(location: attrString.length - 2, length: 1))
+            }
+            attrString.append(colored("\(indent)}", .white))
+
+        case let array as [Any]:
+            if array.isEmpty {
+                attrString.append(colored("[]", .white))
+            } else {
+                attrString.append(colored("[\(newline)", .white))
+                for val in array {
+                    attrString.append(colored("\(indent)  ", .white))
+                    format(val, into: attrString, indentation: indentation + 1)
+                    attrString.append(colored(",\(newline)", .white))
+                }
+                if attrString.string.hasSuffix(",\(newline)") {
+                    attrString.deleteCharacters(in: NSRange(location: attrString.length - 2, length: 1))
+                }
+                attrString.append(colored("\(indent)]", .white))
+            }
+            
+        case let str as String:
+            attrString.append(colored("\"\(str)\"", .JSONStringValueColor))
+            
+        case let num as NSNumber:
+            attrString.append(colored("\(num)", .JSONNumbersValueColor))
+            
+        case is NSNull:
+            attrString.append(colored("null", .JSONOtherValuesColor))
+            
+        default:
+            attrString.append(colored("\"\(String(describing: value))\"", .JSONOtherValuesColor))
+        }
+    }
+    
+    private func colored(_ text: String, _ color: UIColor) -> NSAttributedString {
+        return NSAttributedString(
+            string: text,
+            attributes: [
+                .foregroundColor: color,
+                .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)
+            ]
+        )
     }
     
     func getFormatedJSONData() -> Data? {
-        if let json = try? JSONSerialization.jsonObject(with: self, options: .fragmentsAllowed),
-           let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted) {
-            return jsonData
-        } else { return nil }
+        do {
+            let json = try JSONSerialization.jsonObject(with: self, options: .fragmentsAllowed)
+            
+            if JSONSerialization.isValidJSONObject(json) {
+                return try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            } else {
+                // Fragmento simples como string, número ou booleano
+                return "\(json)".data(using: .utf8)
+            }
+        } catch {
+            print("❌ Erro ao decodificar JSON: \(error)")
+            return nil
+        }
     }
     
     private func getJSONDataString(_ data: Data) -> String {
