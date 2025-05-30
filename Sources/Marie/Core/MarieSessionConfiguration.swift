@@ -12,4 +12,10 @@ public class MarieSessionConfiguration {
         sessionConfiguration.protocolClasses?.insert(MarieCustomURLProtocol.self, at: 0)
         return sessionConfiguration
     }
+    
+    public static let `default`: URLSessionConfiguration = {
+        let sessionConfiguration = URLSessionConfiguration.default
+        sessionConfiguration.protocolClasses?.insert(MarieCustomURLProtocol.self, at: 0)
+        return sessionConfiguration
+    }()
 }

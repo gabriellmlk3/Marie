@@ -35,7 +35,7 @@ final class RequestDetailViewController: UIViewController {
         mainView.setupView(with: viewModel.log)
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: self, action: #selector(backButtonAction))
         navigationController?.navigationBar.tintColor = .primaryTextColor
-        setJsonText()
+        setJsonText(text: viewModel.responseBodyFormatted)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -48,16 +48,14 @@ final class RequestDetailViewController: UIViewController {
     
     private func setupTargets() {
         mainView.segmentedControl.addTarget(self, action: #selector(segmentedControlAction), for: .valueChanged)
-        mainView.requestView.textView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(changeFontSizeButtonAction)))
         mainView.responseView.textView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(changeFontSizeButtonAction)))
         
     }
     
-    private func setJsonText() {
+    private func setJsonText(text: NSAttributedString?) {
         UIView.transition(with: mainView, duration: 0.3, options: .transitionCrossDissolve, animations: { [weak self] in
             guard let self else { return }
-            self.mainView.responseView.textView.attributedText = self.viewModel.responseBodyFormatted
-            self.mainView.requestView.textView.attributedText = viewModel.requestBodyFormatted
+            self.mainView.responseView.textView.attributedText = text
         }, completion: nil)
     }
     
@@ -73,7 +71,6 @@ final class RequestDetailViewController: UIViewController {
             }
             
             oldscale = scale
-            mainView.requestView.textView.font = mainView.requestView.textView.font?.withSize(UIFont.requestResponseTextViewfontSize)
             mainView.responseView.textView.font = mainView.responseView.textView.font?.withSize(UIFont.requestResponseTextViewfontSize)
         }
     }
@@ -95,7 +92,7 @@ extension RequestDetailViewController: RequestDetailViewModelDelegate {
     
     func didLogChange() {
         mainView.setupView(with: viewModel.log)
-        setJsonText()
+        setJsonText(text: NSAttributedString(string: viewModel.log.responseBody ?? ""))
     }
     
 }

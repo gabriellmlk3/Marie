@@ -25,6 +25,14 @@ final class RequestDetailViewModel: Observer {
         getFormattedText(with: log.requestBody ?? "")
     }()
     
+    lazy var requestHeadersFormatted: NSAttributedString? = {
+        var text: String = ""
+        log.headers?.forEach { (key: String, value: String) in
+            text.append("\(key): \(value)\n")
+        }
+        return getFormattedText(with: text)
+    }()
+    
     init(log: URLLogModel) {
         self.log = log
         super.init()

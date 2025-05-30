@@ -27,6 +27,8 @@ final class LogManager {
     
     func update(model: URLLogModel) {
         guard let modelIndex = requestsLog.firstIndex(where: {  $0.id == model.id }) else { return }
+        ImpactController.shared.doTactilFeedback(.light)
+        ImpactController.shared.doTactilFeedback(.medium)
         ImpactController.shared.doTactilFeedback(.heavy)
         requestsLog[modelIndex] = model
         notify(with: model)

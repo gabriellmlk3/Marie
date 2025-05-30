@@ -18,7 +18,7 @@ O `Marie` é um package para apresentação global de um modal customizado em qu
 Adicione o package ao seu projeto via Swift Package Manager.
 
 ```swift
-https://github.com/seu-usuario/marie.git
+https://github.com/gabriellmlk3/marie.git
 ```
 
 ---

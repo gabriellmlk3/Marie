@@ -18,14 +18,14 @@ extension Data {
             format(jsonObject, into: attributedString, indentation: 0)
             return attributedString
         } catch {
-            let errorString = NSMutableAttributedString(string: "⚠️ Invalid JSON: \(error.localizedDescription)")
-            errorString.addAttributes([.foregroundColor: UIColor.red], range: NSRange(location: 0, length: errorString.length))
+            let errorString = NSMutableAttributedString(string: "Invalid JSON: \(error.localizedDescription)")
+            errorString.addAttributes([.foregroundColor: UIColor.white], range: NSRange(location: 0, length: errorString.length))
             return errorString
         }
     }
 
     private func format(_ value: Any, into attrString: NSMutableAttributedString, indentation: Int) {
-        let indent = String(repeating: "    ", count: indentation)
+        let indent = String(repeating: "        ", count: indentation)
         let newline = "\n"
         
         switch value {
@@ -89,11 +89,10 @@ extension Data {
             if JSONSerialization.isValidJSONObject(json) {
                 return try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
             } else {
-                // Fragmento simples como string, número ou booleano
                 return "\(json)".data(using: .utf8)
             }
         } catch {
-            print("❌ Erro ao decodificar JSON: \(error)")
+            print("Erro ao decodificar JSON: \(error)")
             return nil
         }
     }
@@ -111,7 +110,7 @@ extension Data {
         while input.hasBytesAvailable {
             let read = input.read(buffer, maxLength: bufferSize)
             if (read == 0) {
-                break  // added
+                break
             }
             self.append(buffer, count: read)
         }

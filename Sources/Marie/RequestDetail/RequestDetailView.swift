@@ -49,11 +49,11 @@ final class RequestDetailView: UIView {
     }()
     
     let segmentedControl: UISegmentedControl = {
-        let segmentControl = UISegmentedControl(items: ["Request", "Response"])
+        let segmentControl = UISegmentedControl(items: ["Headers", "Request", "Response"])
         segmentControl.backgroundColor = .backgroudColor
         segmentControl.tintColor = .primaryTextColor
         segmentControl.translatesAutoresizingMaskIntoConstraints = false
-        segmentControl.selectedSegmentIndex = 1
+        segmentControl.selectedSegmentIndex = 2
         segmentControl.layer.maskedCorners = .init()
         return segmentControl
     }()
@@ -61,13 +61,6 @@ final class RequestDetailView: UIView {
     let responseView: RequestDetailResponseView = {
         let view = RequestDetailResponseView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    let requestView: RequestDetailRequestView = {
-        let view = RequestDetailRequestView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.isHidden = true
         return view
     }()
     
@@ -83,16 +76,15 @@ final class RequestDetailView: UIView {
     }
     
     func setupView(with log: URLLogModel) {
-        methodLabel.text = "\(log.method ?? "")"
-        codeLabel.text = "\(log.status?.rawValue == 0 ? "-" : "\(log.status?.rawValue ?? 0)")"
+        methodLabel.text = log.method ?? ""
+        codeLabel.text = log.status?.rawValue == 0 ? "-" : "\(log.status?.rawValue ?? 0)"
         requestRouteLabel.text = "Route: \(log.url?.absoluteString ?? "")"
         codeLabel.textColor = log.status?.color
     }
     
     func toggleTextViewsVisibility() {
         UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
-            self.responseView.isHidden.toggle()
-            self.requestView.isHidden.toggle()
+            
         }, completion: nil)
     }
     
@@ -103,7 +95,6 @@ final class RequestDetailView: UIView {
         addSubview(requestRouteLabel)
         addSubview(segmentedControl)
         addSubview(responseView)
-        addSubview(requestView)
         
         NSLayoutConstraint.activate([
             methodLabel.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
@@ -130,11 +121,6 @@ final class RequestDetailView: UIView {
             responseView.leadingAnchor.constraint(equalTo: leadingAnchor),
             responseView.trailingAnchor.constraint(equalTo: trailingAnchor),
             responseView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
-            requestView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor),
-            requestView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            requestView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            requestView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
     
