@@ -25,7 +25,7 @@ extension String {
                 
                 let tagAttributes: [NSAttributedString.Key: Any] = [
                     .foregroundColor:  UIColor(hex: "#ff0055"),
-                    .font: UIFont.boldSystemFont(ofSize: UIFont.requestResponseTextViewfontSize)
+                    .font: UIFont.monospacedSystemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .regular)
                 ]
                 
                 attributedString.addAttributes(tagAttributes, range: tagRange)
@@ -36,7 +36,7 @@ extension String {
                 
                 let stringAttributes: [NSAttributedString.Key: Any] = [
                     .foregroundColor:  UIColor.JSONStringValueColor,
-                    .font: UIFont.boldSystemFont(ofSize: UIFont.requestResponseTextViewfontSize)
+                    .font: UIFont.monospacedSystemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .regular)
                 ]
                 
                 attributedString.addAttributes(stringAttributes, range: stringRange)

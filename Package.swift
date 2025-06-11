@@ -5,18 +5,26 @@ import PackageDescription
 
 let package = Package(
     name: "MarieLib",
-    platforms: [.iOS(.v14)],
+    platforms: [.iOS(.v16)],
     products: [
         .library(
             name: "MarieLib",
-            targets: ["Marie"]),
+            targets: ["Marie"]
+        ),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/hackiftekhar/IQKeyboardManager", from: "8.0.0"),
+        .package(url: "https://github.com/krzyzanowskim/CoreTextSwift.git", from: "0.0.2")
+    ],
     targets: [
         .target(
             name: "Marie",
-            dependencies: [],
+            dependencies: [
+                .product(name: "IQKeyboardManagerSwift", package: "IQKeyboardManager"),
+                .product(name: "CoreTextSwift", package: "CoreTextSwift")
+            ],
             path: "Sources/Marie",
-            resources: [.process("Assets.xcassets")]),
+            resources: [.process("Assets.xcassets")]
+        ),
     ]
 )

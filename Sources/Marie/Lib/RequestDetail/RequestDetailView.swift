@@ -48,19 +48,37 @@ final class RequestDetailView: UIView {
         return label
     }()
     
+    let lockWidthButton: TooltipButton = {
+        let button = TooltipButton(tooltip: "Lock width")
+        button.setImage(.widthLockIcon, for: .normal)
+        button.tintColor = .gray
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.accessibilityLabel = "Lock width"
+        button.accessibilityHint = "Lock width of the request body json visualizer."
+        return button
+    }()
+    
     let segmentedControl: UISegmentedControl = {
-        let segmentControl = UISegmentedControl(items: ["Headers", "Request", "Response"])
+        let segmentControl = UISegmentedControl(items: ["Request", "Response"])
         segmentControl.backgroundColor = .backgroudColor
         segmentControl.tintColor = .primaryTextColor
         segmentControl.translatesAutoresizingMaskIntoConstraints = false
-        segmentControl.selectedSegmentIndex = 2
+        segmentControl.selectedSegmentIndex = 1
         segmentControl.layer.maskedCorners = .init()
         return segmentControl
     }()
     
-    let responseView: RequestDetailResponseView = {
-        let view = RequestDetailResponseView()
+    let responseView: MarieTextView = {
+        let view = MarieTextView()
         view.translatesAutoresizingMaskIntoConstraints = false
+//        view.isVerticallyResizable = true
+//        view.selectedLineHighlightColor = .backgroudColor.withAlphaComponent(0.1)
+//        view.gutterView?.backgroundColor = .backgroudColor
+//        view.gutterView?.tintColor = .white
+//        view.gutterView?.selectedLineHighlightColor = .secondaryTextColor
+//        view.gutterView?.selectedLineTextColor = .backgroudColor
+//        view.font = UIFont.monospacedSystemFont(ofSize: 0, weight: .regular)
+        view.backgroundColor = .black
         return view
     }()
     
@@ -88,11 +106,26 @@ final class RequestDetailView: UIView {
         }, completion: nil)
     }
     
+    func setJSON(_ string: String) {
+//        responseView.text = string
+        responseView.sizeToFit()
+    }
+    
+    func clear() {
+//        responseView.attributedText = nil
+    }
+    
+    func toogleWidthTracksTextView() {
+//        responseView.widthTracksTextView.toggle()
+//        lockWidthButton.tintColor = responseView.widthTracksTextView ? .primaryTextColor : .gray
+    }
+    
     private func addSegmentedControl() {
         addSubview(methodLabel)
         addSubview(statusCodeLabel)
         addSubview(codeLabel)
         addSubview(requestRouteLabel)
+        addSubview(lockWidthButton)
         addSubview(segmentedControl)
         addSubview(responseView)
         
@@ -110,7 +143,10 @@ final class RequestDetailView: UIView {
             
             requestRouteLabel.topAnchor.constraint(equalTo: statusCodeLabel.bottomAnchor, constant: 10),
             requestRouteLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            requestRouteLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            
+            lockWidthButton.leadingAnchor.constraint(greaterThanOrEqualTo: requestRouteLabel.trailingAnchor, constant: 10),
+            lockWidthButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            lockWidthButton.centerYAnchor.constraint(equalTo: requestRouteLabel.centerYAnchor),
             
             segmentedControl.topAnchor.constraint(equalTo: requestRouteLabel.bottomAnchor, constant: 20),
             segmentedControl.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -121,6 +157,7 @@ final class RequestDetailView: UIView {
             responseView.leadingAnchor.constraint(equalTo: leadingAnchor),
             responseView.trailingAnchor.constraint(equalTo: trailingAnchor),
             responseView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            responseView.widthAnchor.constraint(equalToConstant: bounds.size.width),
         ])
     }
     

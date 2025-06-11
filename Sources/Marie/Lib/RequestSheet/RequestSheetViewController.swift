@@ -9,14 +9,14 @@ import UIKit
 
 public final class RequestSheetViewController: UIViewController {
     
-    private let viewModel: RequestSheetViewModel
+    private var viewModel: RequestSheetViewModelProtocol
     private let mainView: RequestSheetView = .init()
     private var phonewavesButton: UIBarButtonItem?
     
-    init(viewModel: RequestSheetViewModel = .init()) {
+    init(viewModel: RequestSheetViewModelProtocol = RequestSheetViewModel()) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
-        viewModel.delegate = self
+        self.viewModel.delegate = self
         mainView.tableView.estimatedRowHeight = 160
         mainView.tableView.delegate = self
         mainView.tableView.dataSource = self
@@ -42,13 +42,16 @@ public final class RequestSheetViewController: UIViewController {
         phonewavesButton = UIBarButtonItem(image: .phonewavesIcon, style: .plain, target: self, action: #selector(phonewavesAction))
         phonewavesButton?.tintColor = ImpactController.isEnable ? .primaryTextColor : .gray
         
-        let recallButton = UIBarButtonItem(image: .repeatIcon, style: .plain, target: self, action: #selector(remakeLastCall))
-        recallButton.tintColor = .primaryTextColor
-        navigationItem.rightBarButtonItems = [recallButton, phonewavesButton ?? UIBarButtonItem() ]
+        let menuButton = UIBarButtonItem(image: .menuIcon, style: .plain, target: self, action: #selector(menuButtonAction))
+        menuButton.tintColor = .primaryTextColor
+        navigationItem.rightBarButtonItems = [menuButton, phonewavesButton ?? UIBarButtonItem() ]
+        
+        let closeButton = UIBarButtonItem(image: .xMarkIcon, style: .plain, target: self, action: #selector(closeButtonAction))
+        closeButton.tintColor = .primaryTextColor
         
         let leftButton = UIBarButtonItem(image: .trashIcon, style: .plain, target: self, action: #selector(cleanButtonAction))
         leftButton.tintColor = .primaryTextColor
-        navigationItem.leftBarButtonItem = leftButton
+        navigationItem.leftBarButtonItems = [closeButton, leftButton]
     }
     
     @objc
@@ -60,21 +63,18 @@ public final class RequestSheetViewController: UIViewController {
     }
     
     @objc
-    private func remakeLastCall() {
-        guard let request = LogManager.shared.requestsLog.first?.request else { return }
-        HTTPManager.shared.recall(request: request) { result in
-            switch result {
-            case .success:
-               break
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
-        }
+    private func cleanButtonAction() {
+        LogManager.shared.clean()
     }
     
     @objc
-    private func cleanButtonAction() {
-        LogManager.shared.clean()
+    private func menuButtonAction() {
+        
+    }
+    
+    @objc
+    private func closeButtonAction() {
+        self.dismiss(animated: true)
     }
     
 }

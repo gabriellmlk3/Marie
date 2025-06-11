@@ -7,8 +7,8 @@
 
 import Foundation
 
-class Observer {
-    func update(log: URLLogModel?) {}
+protocol Observer: AnyObject {
+    func update(log: URLLogModel?)
 }
 
 final class LogManager {
@@ -20,7 +20,12 @@ final class LogManager {
     var requestsLog: [URLLogModel] = []
     
     func log(model: URLLogModel) {
-        requestsLog.insert(model, at: 0)
+        if let modelIndex = requestsLog.firstIndex(where: {  $0.id == model.id }) {
+            requestsLog[modelIndex] = model
+        } else {
+            requestsLog.insert(model, at: 0)
+        }
+        
         ImpactController.shared.doTactilFeedback(.light)
         notify(with: model)
     }
@@ -28,8 +33,15 @@ final class LogManager {
     func update(model: URLLogModel) {
         guard let modelIndex = requestsLog.firstIndex(where: {  $0.id == model.id }) else { return }
         ImpactController.shared.doTactilFeedback(.light)
-        ImpactController.shared.doTactilFeedback(.medium)
-        ImpactController.shared.doTactilFeedback(.heavy)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            ImpactController.shared.doTactilFeedback(.medium)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            ImpactController.shared.doTactilFeedback(.heavy)
+        }
+        
         requestsLog[modelIndex] = model
         notify(with: model)
     }

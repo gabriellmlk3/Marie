@@ -9,17 +9,32 @@ import UIKit
 
 extension UIColor {
     
-    static var backgroudColor: UIColor = {
-        .init(named: "BackgroudColor") ?? .white
-    }()
+    static var backgroudColor = UIColor { traitCollection in
+        switch traitCollection.userInterfaceStyle {
+        case .dark:
+            return UIColor(hex: "#1a1a1a")
+        default:
+            return .init(named: "BackgroudColor") ?? .white
+        }
+    }
     
-    static var primaryTextColor: UIColor = {
-        .init(named: "PrimaryTextColor") ?? .black
-    }()
+    static var primaryTextColor = UIColor { traitCollection in
+        switch traitCollection.userInterfaceStyle {
+        case .dark:
+            return UIColor.white
+        default:
+            return .init(named: "PrimaryTextColor") ?? .black
+        }
+    }
     
-    static var secondaryTextColor: UIColor = {
-        .init(named: "SecondaryTextColor") ?? UIColor(hex: "#454545")
-    }()
+    static var secondaryTextColor = UIColor { traitCollection in
+        switch traitCollection.userInterfaceStyle {
+        case .dark:
+            return UIColor(hex: "#cccccc")
+        default:
+            return UIColor(hex: "#454545")
+        }
+    }
     
     static var JSONKeyColor: UIColor = {
         .init(named: "JSONKeyColor") ?? UIColor(hex: "#AAFF7E")

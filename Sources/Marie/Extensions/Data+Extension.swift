@@ -10,11 +10,22 @@ import UIKit
 
 extension Data {
     
-    func getFormattedJsonText() -> NSMutableAttributedString? {
+    /// Retorna um NSAttributedString formatado como JSON ou HTML, dependendo do conteúdo.
+    func getFormattedText() -> NSMutableAttributedString? {
+        // Tentativa de detectar HTML simples
+        if let htmlString = String(data: self, encoding: .utf8),
+           htmlString.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("<") {
+            return formatHTML(htmlString)
+        }
+        // Fallback para JSON
+        return getFormattedJsonText()
+    }
+    
+    /// Formata JSON em NSMutableAttributedString com cores e indentação
+    private func getFormattedJsonText() -> NSMutableAttributedString? {
         do {
             let jsonObject = try JSONSerialization.jsonObject(with: self, options: [])
             let attributedString = NSMutableAttributedString()
-            
             format(jsonObject, into: attributedString, indentation: 0)
             return attributedString
         } catch {
@@ -24,8 +35,28 @@ extension Data {
         }
     }
 
+    /// Converte HTML em NSMutableAttributedString preservando formatação básica
+    private func formatHTML(_ html: String) -> NSMutableAttributedString? {
+        guard let data = html.data(using: .utf8) else { return nil }
+        let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [
+            .documentType: NSAttributedString.DocumentType.html,
+            .characterEncoding: String.Encoding.utf8.rawValue
+        ]
+        do {
+            let attributed = try NSMutableAttributedString(data: data,
+                                                           options: options,
+                                                           documentAttributes: nil)
+            return attributed
+        } catch {
+            let errorString = NSMutableAttributedString(string: "Invalid HTML: \(error.localizedDescription)")
+            errorString.addAttributes([.foregroundColor: UIColor.red], range: NSRange(location: 0, length: errorString.length))
+            return errorString
+        }
+    }
+    
+    // MARK: - JSON Pretty Print Utilities
     private func format(_ value: Any, into attrString: NSMutableAttributedString, indentation: Int) {
-        let indent = String(repeating: "        ", count: indentation)
+        let indent = String(repeating: "    ", count: indentation)
         let newline = "\n"
         
         switch value {
@@ -38,7 +69,7 @@ extension Data {
                 attrString.append(colored(",\(newline)", .white))
             }
             if attrString.string.hasSuffix(",\(newline)") {
-                attrString.deleteCharacters(in: NSRange(location: attrString.length - 2, length: 1))
+                attrString.deleteCharacters(in: NSRange(location: attrString.length - newline.count - 1, length: 1))
             }
             attrString.append(colored("\(indent)}", .white))
 
@@ -53,7 +84,7 @@ extension Data {
                     attrString.append(colored(",\(newline)", .white))
                 }
                 if attrString.string.hasSuffix(",\(newline)") {
-                    attrString.deleteCharacters(in: NSRange(location: attrString.length - 2, length: 1))
+                    attrString.deleteCharacters(in: NSRange(location: attrString.length - newline.count - 1, length: 1))
                 }
                 attrString.append(colored("\(indent)]", .white))
             }
@@ -77,22 +108,22 @@ extension Data {
             string: text,
             attributes: [
                 .foregroundColor: color,
-                .font: UIFont.systemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)
+                .font: UIFont.monospacedSystemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .semibold)
             ]
         )
     }
     
+    /// Retorna JSON formatado em Data (pretty-printed) ou string simples
     func getFormatedJSONData() -> Data? {
         do {
             let json = try JSONSerialization.jsonObject(with: self, options: .fragmentsAllowed)
-            
             if JSONSerialization.isValidJSONObject(json) {
                 return try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
             } else {
                 return "\(json)".data(using: .utf8)
             }
         } catch {
-            print("Erro ao decodificar JSON: \(error)")
+            print("Erro ao decodificar JSON")
             return nil
         }
     }

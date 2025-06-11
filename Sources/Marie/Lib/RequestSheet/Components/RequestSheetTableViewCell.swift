@@ -95,11 +95,12 @@ class RequestSheetTableViewCell: UITableViewCell {
         guard let status = logModel.status else { return }
         statusView.backgroundColor = status.color
         methodLabel.text = logModel.method
-        statusCodeLabel.text = status.rawValue == 0 ? "" : "\(status.rawValue)"
+        statusCodeLabel.text = status.rawValue == 0 ? "-" : "\(status.rawValue)"
         requestEndpointLabel.text = logModel.url?.path.isEmpty ?? true ? " " : logModel.url?.path
         requestRouteLabel.text = logModel.url?.absoluteString
         
         status.rawValue == 0 ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
+        activityIndicator.isHidden = status.rawValue != 0
         
         let numberFormatter = NumberFormatter()
         numberFormatter.maximumFractionDigits = 4

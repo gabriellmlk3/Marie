@@ -12,7 +12,7 @@ final class RequestSheetView: UIView {
     let gapView: UIView = {
         let view = UIView()
         view.backgroundColor = .primaryTextColor.withAlphaComponent(0.2)
-        view.layer.cornerRadius = 5
+        view.layer.cornerRadius = 2
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -40,7 +40,7 @@ final class RequestSheetView: UIView {
         NSLayoutConstraint.activate([
             gapView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
             gapView.widthAnchor.constraint(equalToConstant: 100),
-            gapView.heightAnchor.constraint(equalToConstant: 10),
+            gapView.heightAnchor.constraint(equalToConstant: 5),
             gapView.centerXAnchor.constraint(equalTo: centerXAnchor),
             
             tableView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),

@@ -24,11 +24,15 @@ open class MarieCustomURLProtocol: URLProtocol {
     }
     
     open override func startLoading() {
+        let id = URLProtocol.property(forKey: "requestToRecallId", in: request) as? UUID ?? UUID()
+        
         var logModel = URLLogModel(
+            id: id,
             request: request,
             url: request.url,
             method: request.httpMethod,
-            headers: request.allHTTPHeaderFields,
+            requestHeaders: request.allHTTPHeaderFields,
+            responseHeaders: nil,
             status: .awaiting,
             responseBody: nil,
             requestBody: nil,

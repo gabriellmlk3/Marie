@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import IQKeyboardManagerSwift
 
 open class MarieWindow: UIWindow {
     
@@ -14,11 +15,15 @@ open class MarieWindow: UIWindow {
     @available(iOS 13.0, *)
     public override init(windowScene: UIWindowScene) {
         super.init(windowScene: windowScene)
+        IQKeyboardManager.shared.isEnabled = true
+        IQKeyboardManager.shared.resignOnTouchOutside = true
         setupGesture()
     }
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
+        IQKeyboardManager.shared.isEnabled = true
+        IQKeyboardManager.shared.resignOnTouchOutside = true
         setupGesture()
     }
     
@@ -35,13 +40,32 @@ open class MarieWindow: UIWindow {
     }
     
     @objc private func handleLongGesture(_ gesture: UILongPressGestureRecognizer) {
-        if let rootViewController = UIApplication.getCurrentViewController(), gesture.state == .began {
+        if gesture.state == .began {
+            openRequestViewController()
+        }
+    }
+    
+    open func openRequestViewController() {
+        if let rootViewController = UIApplication.getCurrentViewController() {
             ImpactController.shared.doTactilFeedback(.light)
             let navigationController = UINavigationController(rootViewController: requestSheetviewController)
             navigationController.navigationBar.setBackgroundImage(UIImage(), for: .default)
             navigationController.navigationBar.shadowImage = UIImage()
             navigationController.navigationBar.barTintColor = nil
             navigationController.navigationBar.isTranslucent = true
+            rootViewController.present(navigationController, animated: true, completion: nil)
+        }
+    }
+    
+    open func openRequestViewFullScreenController() {
+        if let rootViewController = UIApplication.getCurrentViewController() {
+            ImpactController.shared.doTactilFeedback(.light)
+            let navigationController = UINavigationController(rootViewController: requestSheetviewController)
+            navigationController.navigationBar.setBackgroundImage(UIImage(), for: .default)
+            navigationController.navigationBar.shadowImage = UIImage()
+            navigationController.navigationBar.barTintColor = nil
+            navigationController.navigationBar.isTranslucent = true
+            navigationController.modalPresentationStyle = .fullScreen
             rootViewController.present(navigationController, animated: true, completion: nil)
         }
     }

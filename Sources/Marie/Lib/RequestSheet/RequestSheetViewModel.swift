@@ -7,20 +7,26 @@
 
 import UIKit
 
+protocol RequestSheetViewModelProtocol {
+    var delegate: RequestSheetViewModelDelegate? { get set }
+}
+
 protocol RequestSheetViewModelDelegate: AnyObject {
     func didLogChange()
 }
 
-final class RequestSheetViewModel: Observer {
+final class RequestSheetViewModel: RequestSheetViewModelProtocol {
     
     weak var delegate: RequestSheetViewModelDelegate?
     
-    override init() {
-        super.init()
+    init() {
         LogManager.shared.attach(self)
     }
+}
+
+extension RequestSheetViewModel: Observer {
     
-    override func update(log: URLLogModel?) {
+    func update(log: URLLogModel?) {
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.didLogChange()
         }
