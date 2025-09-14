@@ -46,4 +46,18 @@ extension String {
         return attributedString
     }
     
+    func getFormattedText() -> NSMutableAttributedString? {
+        var body: NSMutableAttributedString?
+        
+        if let data = (self).data(using: .utf8),
+           let formattedJson = data.getFormattedText() {
+            body = formattedJson
+        } else {
+            body = .init(string: self)
+            body?.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: body?.length ?? 0))
+        }
+        
+        return body
+    }
+    
 }

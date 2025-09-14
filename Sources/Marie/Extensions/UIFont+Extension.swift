@@ -10,5 +10,6 @@ import UIKit
 extension UIFont {
     
     static var requestResponseTextViewfontSize: CGFloat = 13.0
+    static var requestResponseGutterfontSize: CGFloat = 14.0
     
 }

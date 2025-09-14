@@ -69,7 +69,7 @@ final class RequestDetailViewController: UIViewController {
     }
     
     private func setupTargets() {
-//        mainView.lockWidthButton.addTarget(self, action: #selector(beautifyContent), for: .touchUpInside)
+        mainView.lockWidthButton.addTarget(self, action: #selector(toogleWidthTracksTextView), for: .touchUpInside)
         mainView.segmentedControl.addTarget(self, action: #selector(segmentedControlAction), for: .valueChanged)
         mainView.responseView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(changeFontSizeButtonAction)))
         
@@ -81,14 +81,12 @@ final class RequestDetailViewController: UIViewController {
 //            case 0:
 //                self?.mainView.setJSON(self?.viewModel.requestHeadersFormatted ?? NSAttributedString(string: ""))
             case 0:
-                self?.mainView.setJSON(self?.viewModel.requestBodyFormatted ?? "")
+                self?.mainView.setJSON(self?.viewModel.requestBodyFormatted)
             default:
-                self?.mainView.setJSON(self?.viewModel.responseBodyFormatted ?? "")
+                self?.mainView.setJSON(self?.viewModel.responseBodyFormatted)
             }
-            
-//            self?.beautifyContent()
         }, completion: nil)
-        
+        mainView.responseView.updateGutter()
     }
     
     @objc
@@ -98,12 +96,15 @@ final class RequestDetailViewController: UIViewController {
             
             if scale > oldscale  && UIFont.requestResponseTextViewfontSize < 30 {
                 UIFont.requestResponseTextViewfontSize += 0.5
+                UIFont.requestResponseGutterfontSize += 0.5
             } else if scale < oldscale && UIFont.requestResponseTextViewfontSize > 10{
                 UIFont.requestResponseTextViewfontSize -= 0.5
+                UIFont.requestResponseGutterfontSize -= 0.5
             }
             
             oldscale = scale
-//            mainView.responseView.font = mainView.responseView.font.withSize(UIFont.requestResponseTextViewfontSize)
+            mainView.responseView.textView.font = mainView.responseView.textView.font?.withSize(UIFont.requestResponseTextViewfontSize)
+            mainView.responseView.gutterFontSize = UIFont.requestResponseGutterfontSize
         }
     }
     
@@ -115,6 +116,7 @@ final class RequestDetailViewController: UIViewController {
     @objc
     private func editModeButtonAction() {
         viewModel.isEditable.toggle()
+        mainView.responseView.textView.isEditable = viewModel.isEditable
         editModeButton.tintColor = viewModel.isEditable ? .primaryTextColor : .gray
     }
     
@@ -135,45 +137,6 @@ final class RequestDetailViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
-//    @objc private func beautifyContent() {
-//        let textView = mainView.responseView
-//        let raw = textView.text ?? ""
-//        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-//        
-//        // Se for JSON:
-//        if trimmed.first == "{" || trimmed.first == "[" {
-//            guard let data = raw.data(using: .utf8) else { return }
-//            do {
-//                let obj = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
-//                let prettyData = try JSONSerialization.data(
-//                    withJSONObject: obj,
-//                    options: .prettyPrinted
-//                )
-//                guard let prettyString = String(data: prettyData, encoding: .utf8) else { return }
-//                
-//                // Atualiza o texto indentado
-//                // (salva seleção para restaurar depois)
-//                let selectedRange = textView.selectedTextRange
-//                textView.text = prettyString
-//                textView.selectedTextRange = selectedRange
-//                return
-//            } catch {
-////                showError("JSON inválido: \(error.localizedDescription)")
-//                return
-//            }
-//        }
-//        
-//        // Se for HTML (começa com "<"), opcionalmente você pode reatribuir bruto:
-//        if trimmed.hasPrefix("<") {
-//            // (usando SwiftSoup ou outro parser você poderia reindentar,
-//            //  mas aqui apenas “re-carregamos” para disparar o highlight)
-//            let selectedRange = textView.selectedTextRange
-//            textView.text = raw
-//            textView.selectedTextRange = selectedRange
-//        }
-//    }
-
-    
 }
 
 extension RequestDetailViewController: RequestDetailViewModelDelegate {
@@ -184,70 +147,3 @@ extension RequestDetailViewController: RequestDetailViewModelDelegate {
     }
     
 }
-
-//extension RequestDetailViewController: MarieTextViewDelegate {
-//    
-//    func textView(_ textView: MarieTextView, shouldChangeTextIn affectedCharRange: NSTextRange, replacementString: String?) -> Bool {
-//        return viewModel.isEditable
-//    }
-//    
-//    func textView(
-//        _ textView: MarieTextView,
-//        didChangeTextIn affectedCharRange: NSTextRange,
-//        replacementString: String
-//    )
-//    {
-//        let fullString = textView.text ?? ""
-//        let fullNSString = fullString as NSString
-//        let fullRange = NSRange(location: 0, length: fullNSString.length)
-//        
-//        // 1) Limpa todos os atributos de cor/fonte
-//        textView.setAttributes([
-//            .foregroundColor: UIColor.white,
-//            .font: UIFont.monospacedSystemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .regular)
-//        ], range: fullRange)
-//        
-//        // 2) Primeiro, destaque as KEYS (strings antes de dois-pontos)
-//        let keyPattern = "\"(?:\\\\.|[^\"\\\\])*\"(?=\\s*:\\s*)"
-//        if let keyRegex = try? NSRegularExpression(pattern: keyPattern, options: []) {
-//            let keyMatches = keyRegex.matches(in: fullString, options: [], range: fullRange)
-//            for match in keyMatches {
-//                textView.addAttributes([
-//                    .foregroundColor: UIColor.JSONKeyColor,
-//                    .font: UIFont.monospacedSystemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .regular)
-//                ], range: match.range)
-//            }
-//        }
-//        
-//        // 3) Depois, destaque valores (strings, números, literais, etc.)
-//        let patterns: [(String, UIColor)] = [
-//            // Strings (valores)
-//            ("\"(?:\\\\.|[^\"\\\\])*\"", .JSONStringValueColor),
-//            // Números
-//            ("[-+]?\\b\\d+(?:\\.\\d+)?\\b", .JSONNumbersValueColor),
-//            // Literais true/false/null
-//            ("\\b(true|false|null)\\b", .JSONOtherValuesColor),
-//            // Chaves e colchetes
-//            ("[\\{\\}\\[\\]]", .white),
-//            // Dois-pontos e vírgulas
-//            ("[:{},]", .white)
-//        ]
-//        
-//        for (pattern, color) in patterns {
-//            guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { continue }
-//            let matches = regex.matches(in: fullString, options: [], range: fullRange)
-//            for match in matches {
-//                // Se o intervalo já foi marcado como KEY, pule
-//                let existing = (textView.textContentManager as? NSTextContentStorage)?.textStorage?.attributes(at: match.range.location, effectiveRange: nil)
-//                if existing?[.foregroundColor] as? UIColor == UIColor.JSONKeyColor || existing?[.foregroundColor] as? UIColor == UIColor.JSONStringValueColor {
-//                    continue
-//                }
-//                // Aplica estilo
-//                textView.addAttributes([
-//                    .foregroundColor: color,
-//                    .font: UIFont.monospacedSystemFont(ofSize: UIFont.requestResponseTextViewfontSize, weight: .regular)
-//                ], range: match.range)
-//            }
-//        }
-//    }
-//}

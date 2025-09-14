@@ -90,7 +90,6 @@ class TooltipButton: UIButton {
 
         containerView.frame.origin = CGPoint(x: tooltipX, y: tooltipY)
     }
-
     
     override func didMoveToSuperview() {
         super.didMoveToSuperview()

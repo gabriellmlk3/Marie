@@ -11,10 +11,9 @@ protocol RequestDetailViewModelProtocol: Observer {
     var log: URLLogModel { get }
     var isEditable: Bool { get set }
     var delegate: RequestDetailViewModelDelegate? { get set }
-    var responseBodyFormatted: String { get }
-    var requestBodyFormatted: String { get }
+    var responseBodyFormatted: NSMutableAttributedString? { get }
+    var requestBodyFormatted: NSMutableAttributedString? { get }
     var requestHeadersFormatted: NSAttributedString? { get }
-    func getFormattedText(with text: String) -> NSMutableAttributedString?
     func recallRequest()
 }
 
@@ -30,12 +29,12 @@ final class RequestDetailViewModel: RequestDetailViewModelProtocol {
     
     var isEditable: Bool = false
     
-    lazy var responseBodyFormatted: String = {
-        log.responseBody ?? ""
+    lazy var responseBodyFormatted: NSMutableAttributedString? = {
+        log.responseBody?.getFormattedText()
     }()
     
-    lazy var requestBodyFormatted: String = {
-        log.requestBody ?? ""
+    lazy var requestBodyFormatted: NSMutableAttributedString? = {
+        log.requestBody?.getFormattedText()
     }()
     
     lazy var requestHeadersFormatted: NSAttributedString? = {
@@ -43,26 +42,12 @@ final class RequestDetailViewModel: RequestDetailViewModelProtocol {
         log.requestHeaders?.forEach { (key: String, value: String) in
             text.append("\(key): \(value)\n")
         }
-        return getFormattedText(with: text)
+        return text.getFormattedText()
     }()
     
     init(log: URLLogModel) {
         self.log = log
         LogManager.shared.attach(self)
-    }
-    
-    func getFormattedText(with text: String) -> NSMutableAttributedString? {
-        var body: NSMutableAttributedString?
-        
-        if let data = (text).data(using: .utf8),
-           let formattedJson = data.getFormattedText() {
-            body = formattedJson
-        } else {
-            body = .init(string: text)
-            body?.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: body?.length ?? 0))
-        }
-        
-        return body
     }
     
     func recallRequest() {

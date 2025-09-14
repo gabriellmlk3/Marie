@@ -55,6 +55,7 @@ final class RequestDetailView: UIView {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.accessibilityLabel = "Lock width"
         button.accessibilityHint = "Lock width of the request body json visualizer."
+        button.isHidden = true
         return button
     }()
     
@@ -68,24 +69,29 @@ final class RequestDetailView: UIView {
         return segmentControl
     }()
     
-    let responseView: MarieTextView = {
-        let view = MarieTextView()
+    let responseView: JSONEditorView = {
+        let view = JSONEditorView()
         view.translatesAutoresizingMaskIntoConstraints = false
-//        view.isVerticallyResizable = true
-//        view.selectedLineHighlightColor = .backgroudColor.withAlphaComponent(0.1)
-//        view.gutterView?.backgroundColor = .backgroudColor
-//        view.gutterView?.tintColor = .white
-//        view.gutterView?.selectedLineHighlightColor = .secondaryTextColor
-//        view.gutterView?.selectedLineTextColor = .backgroudColor
-//        view.font = UIFont.monospacedSystemFont(ofSize: 0, weight: .regular)
-        view.backgroundColor = .black
         return view
     }()
+    
+    var responseViewFontSize: UIFont? {
+        get { responseView.textView.font }
+        set {
+            responseView.textView.font = newValue
+            responseView.updateGutter()
+        }
+    }
+    
+    var gutterFontSize: CGFloat {
+        get { responseView.gutterFontSize }
+        set { responseView.gutterFontSize = newValue }
+    }
     
     init() {
         super.init(frame: .zero)
         backgroundColor = .backgroudColor
-        addSegmentedControl()
+        setupLayout()
     }
     
     @available(*, unavailable)
@@ -106,21 +112,20 @@ final class RequestDetailView: UIView {
         }, completion: nil)
     }
     
-    func setJSON(_ string: String) {
-//        responseView.text = string
-        responseView.sizeToFit()
+    func setJSON(_ string: NSMutableAttributedString?) {
+        responseView.textView.attributedText = string
     }
     
     func clear() {
-//        responseView.attributedText = nil
+        responseView.textView.attributedText = nil
     }
     
     func toogleWidthTracksTextView() {
-//        responseView.widthTracksTextView.toggle()
-//        lockWidthButton.tintColor = responseView.widthTracksTextView ? .primaryTextColor : .gray
+        responseView.toggleLineWrap()
+        lockWidthButton.tintColor = responseView.isLineWrapEnabled ? .primaryTextColor : .gray
     }
     
-    private func addSegmentedControl() {
+    private func setupLayout() {
         addSubview(methodLabel)
         addSubview(statusCodeLabel)
         addSubview(codeLabel)
@@ -156,8 +161,7 @@ final class RequestDetailView: UIView {
             responseView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor),
             responseView.leadingAnchor.constraint(equalTo: leadingAnchor),
             responseView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            responseView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            responseView.widthAnchor.constraint(equalToConstant: bounds.size.width),
+            responseView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
     
