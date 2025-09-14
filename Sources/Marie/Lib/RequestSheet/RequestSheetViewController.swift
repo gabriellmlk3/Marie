@@ -42,9 +42,7 @@ public final class RequestSheetViewController: UIViewController {
         phonewavesButton = UIBarButtonItem(image: .phonewavesIcon, style: .plain, target: self, action: #selector(phonewavesAction))
         phonewavesButton?.tintColor = ImpactController.isEnable ? .primaryTextColor : .gray
         
-        let menuButton = UIBarButtonItem(image: .menuIcon, style: .plain, target: self, action: #selector(menuButtonAction))
-        menuButton.tintColor = .primaryTextColor
-        navigationItem.rightBarButtonItems = [menuButton, phonewavesButton ?? UIBarButtonItem() ]
+        navigationItem.rightBarButtonItems = [phonewavesButton ?? UIBarButtonItem() ]
         
         let closeButton = UIBarButtonItem(image: .xMarkIcon, style: .plain, target: self, action: #selector(closeButtonAction))
         closeButton.tintColor = .primaryTextColor
@@ -65,11 +63,6 @@ public final class RequestSheetViewController: UIViewController {
     @objc
     private func cleanButtonAction() {
         LogManager.shared.clean()
-    }
-    
-    @objc
-    private func menuButtonAction() {
-        
     }
     
     @objc

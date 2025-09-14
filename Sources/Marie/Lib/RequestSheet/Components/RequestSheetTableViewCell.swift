@@ -22,7 +22,6 @@ class RequestSheetTableViewCell: UITableViewCell {
         label.font = .systemFont(ofSize: 24, weight: .bold)
         label.textColor = .primaryTextColor
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textAlignment = .center
         return label
     }()
     
@@ -31,7 +30,6 @@ class RequestSheetTableViewCell: UITableViewCell {
         label.font = .systemFont(ofSize: 16)
         label.textColor = .secondaryTextColor
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textAlignment = .center
         return label
     }()
     
@@ -136,7 +134,7 @@ class RequestSheetTableViewCell: UITableViewCell {
             
             methodLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
             methodLabel.leadingAnchor.constraint(equalTo: statusView.trailingAnchor, constant: 16),
-            methodLabel.widthAnchor.constraint(equalToConstant: 70),
+            methodLabel.widthAnchor.constraint(equalToConstant: 90),
             
             requestRouteLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             requestRouteLabel.leadingAnchor.constraint(equalTo: methodLabel.trailingAnchor, constant: 20),
